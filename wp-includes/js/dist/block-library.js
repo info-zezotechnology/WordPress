@@ -2652,7 +2652,7 @@ const external_wp_privateApis_namespaceObject = window["wp"]["privateApis"];
 const {
   lock,
   unlock
-} = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)('I know using unstable features means my theme or plugin will inevitably break in the next version of WordPress.', '@wordpress/block-library');
+} = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)('I acknowledge private features are not for use in themes or plugins and doing so will break in the next version of WordPress.', '@wordpress/block-library');
 
 ;// CONCATENATED MODULE: ./node_modules/@wordpress/block-library/build-module/embed/util.js
 /**
@@ -3145,6 +3145,7 @@ function Caption({
   placeholder = (0,external_wp_i18n_namespaceObject.__)('Add caption'),
   label = (0,external_wp_i18n_namespaceObject.__)('Caption text'),
   showToolbarButton = true,
+  excludeElementClassName,
   className,
   readOnly,
   tagName = 'figcaption',
@@ -3200,7 +3201,7 @@ function Caption({
     }), showCaption && (!RichText.isEmpty(caption) || isSelected) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(RichText, {
       identifier: attributeKey,
       tagName: tagName,
-      className: dist_clsx(className, (0,external_wp_blockEditor_namespaceObject.__experimentalGetElementClassName)('caption')),
+      className: dist_clsx(className, excludeElementClassName ? '' : (0,external_wp_blockEditor_namespaceObject.__experimentalGetElementClassName)('caption')),
       ref: ref,
       "aria-label": label,
       placeholder: placeholder,
@@ -5192,9 +5193,6 @@ function save_save({
     url,
     width
   } = attributes;
-  if (external_wp_blockEditor_namespaceObject.RichText.isEmpty(text)) {
-    return null;
-  }
   const TagName = tagName || 'a';
   const isButtonTag = 'button' === TagName;
   const buttonType = type || 'button';
@@ -16974,16 +16972,6 @@ const embed_variations_variations = [{
     responsive: true
   }
 }, {
-  name: 'slideshare',
-  title: 'Slideshare',
-  icon: embedContentIcon,
-  description: (0,external_wp_i18n_namespaceObject.__)('Embed Slideshare content.'),
-  patterns: [/^https?:\/\/(.+?\.)?slideshare\.net\/.+/i],
-  attributes: {
-    providerNameSlug: 'slideshare',
-    responsive: true
-  }
-}, {
   name: 'smugmug',
   title: 'SmugMug',
   icon: embedPhotoIcon,
@@ -21802,13 +21790,19 @@ class GalleryImage extends external_wp_element_namespaceObject.Component {
             icon: chevron_left,
             onClick: isFirstItem ? undefined : onMoveBackward,
             label: (0,external_wp_i18n_namespaceObject.__)('Move image backward'),
-            "aria-disabled": isFirstItem,
+            "aria-disabled": isFirstItem
+            // Disable reason: Truly disable when image is not selected.
+            // eslint-disable-next-line no-restricted-syntax
+            ,
             disabled: !isSelected
           }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
             icon: chevron_right,
             onClick: isLastItem ? undefined : onMoveForward,
             label: (0,external_wp_i18n_namespaceObject.__)('Move image forward'),
-            "aria-disabled": isLastItem,
+            "aria-disabled": isLastItem
+            // Disable reason: Truly disable when image is not selected.
+            // eslint-disable-next-line no-restricted-syntax
+            ,
             disabled: !isSelected
           })]
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.ButtonGroup, {
@@ -21816,12 +21810,18 @@ class GalleryImage extends external_wp_element_namespaceObject.Component {
           children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
             icon: library_edit,
             onClick: this.onEdit,
-            label: (0,external_wp_i18n_namespaceObject.__)('Replace image'),
+            label: (0,external_wp_i18n_namespaceObject.__)('Replace image')
+            // Disable reason: Truly disable when image is not selected.
+            // eslint-disable-next-line no-restricted-syntax
+            ,
             disabled: !isSelected
           }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
             icon: close_small,
             onClick: onRemove,
-            label: (0,external_wp_i18n_namespaceObject.__)('Remove image'),
+            label: (0,external_wp_i18n_namespaceObject.__)('Remove image')
+            // Disable reason: Truly disable when image is not selected.
+            // eslint-disable-next-line no-restricted-syntax
+            ,
             disabled: !isSelected
           })]
         }), !isEditing && (isSelected || caption) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.RichText, {
@@ -26742,6 +26742,7 @@ function image_Image({
       children: isResizable && dimensionsControl
     })
   });
+  const arePatternOverridesEnabled = metadata?.bindings?.__default?.source === 'core/pattern-overrides';
   const {
     lockUrlControls = false,
     lockHrefControls = false,
@@ -26778,7 +26779,7 @@ function image_Image({
       lockHrefControls:
       // Disable editing the link of the URL if the image is inside a pattern instance.
       // This is a temporary solution until we support overriding the link on the frontend.
-      hasParentPattern,
+      hasParentPattern || arePatternOverridesEnabled,
       lockCaption:
       // Disable editing the caption if the image is inside a pattern instance.
       // This is a temporary solution until we support overriding the caption on the frontend.
@@ -27152,7 +27153,7 @@ function image_Image({
       isSelected: isSingleSelected,
       insertBlocksAfter: insertBlocksAfter,
       label: (0,external_wp_i18n_namespaceObject.__)('Image caption text'),
-      showToolbarButton: isSingleSelected && hasNonContentControls,
+      showToolbarButton: isSingleSelected && hasNonContentControls && !arePatternOverridesEnabled,
       readOnly: lockCaption
     })]
   });
@@ -39285,6 +39286,7 @@ function ConvertToLinksModal({
         children: (0,external_wp_i18n_namespaceObject.__)('Cancel')
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
         variant: "primary",
+        __experimentalIsFocusable: true,
         disabled: disabled,
         onClick: onClick,
         children: (0,external_wp_i18n_namespaceObject.__)('Edit')
@@ -39563,6 +39565,7 @@ function PageListEdit({
           children: convertDescription
         }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
           variant: "primary",
+          __experimentalIsFocusable: true,
           disabled: !hasResolvedPages,
           onClick: convertToNavigationLinks,
           children: (0,external_wp_i18n_namespaceObject.__)('Edit')
@@ -50442,6 +50445,7 @@ function QuoteEdit({
         (0,external_wp_i18n_namespaceObject.__)('Add citation'),
         addLabel: (0,external_wp_i18n_namespaceObject.__)('Add citation'),
         removeLabel: (0,external_wp_i18n_namespaceObject.__)('Remove citation'),
+        excludeElementClassName: true,
         className: "wp-block-quote__citation",
         insertBlocksAfter: insertBlocksAfter,
         ...(!edit_isWebPlatform ? {
@@ -55237,8 +55241,6 @@ const getNameBySite = name => {
 
 
 
-
-
 /**
  * Internal dependencies
  */
@@ -55250,12 +55252,8 @@ const SocialLinkURLPopover = ({
   url,
   setAttributes,
   setPopover,
-  popoverAnchor,
-  clientId
+  popoverAnchor
 }) => {
-  const {
-    removeBlock
-  } = (0,external_wp_data_namespaceObject.useDispatch)(external_wp_blockEditor_namespaceObject.store);
   return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.URLPopover, {
     anchor: popoverAnchor,
     onClose: () => setPopover(false),
@@ -55276,13 +55274,7 @@ const SocialLinkURLPopover = ({
           placeholder: (0,external_wp_i18n_namespaceObject.__)('Enter social link'),
           label: (0,external_wp_i18n_namespaceObject.__)('Enter social link'),
           hideLabelFromVision: true,
-          disableSuggestions: true,
-          onKeyDown: event => {
-            if (!!url || event.defaultPrevented || ![external_wp_keycodes_namespaceObject.BACKSPACE, external_wp_keycodes_namespaceObject.DELETE].includes(event.keyCode)) {
-              return;
-            }
-            removeBlock(clientId);
-          }
+          disableSuggestions: true
         })
       }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
         icon: keyboard_return,
@@ -55296,8 +55288,7 @@ const SocialLinkEdit = ({
   attributes,
   context,
   isSelected,
-  setAttributes,
-  clientId
+  setAttributes
 }) => {
   const {
     url,
@@ -55379,8 +55370,7 @@ const SocialLinkEdit = ({
         url: url,
         setAttributes: setAttributes,
         setPopover: setPopover,
-        popoverAnchor: popoverAnchor,
-        clientId: clientId
+        popoverAnchor: popoverAnchor
       })]
     })]
   });
@@ -60229,8 +60219,8 @@ function TitleModal({
           children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
             variant: "primary",
             type: "submit",
+            __experimentalIsFocusable: true,
             disabled: !title.length,
-            "aria-disabled": !title.length,
             children: (0,external_wp_i18n_namespaceObject.__)('Create')
           })
         })]

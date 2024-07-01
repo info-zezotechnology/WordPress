@@ -1170,18 +1170,6 @@ figure.wp-block-image:not(.wp-block){
   overflow:visible !important;
 }
 
-.wp-block-image__aspect-ratio{
-  align-items:center;
-  display:flex;
-  height:46px;
-  margin-bottom:-8px;
-}
-.wp-block-image__aspect-ratio .components-button{
-  padding-left:0;
-  padding-right:0;
-  width:36px;
-}
-
 .wp-block-image__toolbar_content_textarea{
   width:250px;
 }
@@ -1593,10 +1581,6 @@ figure.wp-block-image:not(.wp-block){
 
 .is-mobile-preview .wp-block-navigation__responsive-container.is-menu-open,.is-tablet-preview .wp-block-navigation__responsive-container.is-menu-open{
   top:141px;
-}
-
-.is-sidebar-opened .wp-block-navigation__responsive-container.is-menu-open{
-  right:280px;
 }
 
 .is-fullscreen-mode .wp-block-navigation__responsive-container.is-menu-open{
@@ -2507,10 +2491,11 @@ body.editor-styles-wrapper .wp-block-navigation__responsive-container.is-menu-op
 }
 .block-library-query-pattern__selection-modal .block-library-query-pattern__selection-search{
   background:#fff;
-  margin-bottom:2px;
+  margin-bottom:-4px;
   padding:16px 0;
   position:sticky;
   top:0;
+  transform:translateY(-4px);
   z-index:2;
 }
 

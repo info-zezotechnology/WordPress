@@ -6779,7 +6779,7 @@ const external_wp_privateApis_namespaceObject = window["wp"]["privateApis"];
 const {
   lock,
   unlock
-} = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)('I know using unstable features means my theme or plugin will inevitably break in the next version of WordPress.', '@wordpress/blocks');
+} = (0,external_wp_privateApis_namespaceObject.__dangerousOptInToUnstableAPIsOnlyForCoreModules)('I acknowledge private features are not for use in themes or plugins and doing so will break in the next version of WordPress.', '@wordpress/blocks');
 
 ;// CONCATENATED MODULE: ./node_modules/@wordpress/blocks/build-module/api/registration.js
 /* eslint no-console: [ 'error', { allow: [ 'error', 'warn' ] } ] */
@@ -8164,6 +8164,27 @@ const getValueFromObjectPath = (object, path, defaultValue) => {
   });
   return (_value = value) !== null && _value !== void 0 ? _value : defaultValue;
 };
+function utils_isObject(candidate) {
+  return typeof candidate === 'object' && candidate.constructor === Object && candidate !== null;
+}
+
+/**
+ * Determine whether a set of object properties matches a given object.
+ *
+ * Given an object of block attributes and an object of variation attributes,
+ * this function checks recursively whether all the variation attributes are
+ * present in the block attributes object.
+ *
+ * @param {Object} blockAttributes     The object to inspect.
+ * @param {Object} variationAttributes The object of property values to match.
+ * @return {boolean} Whether the block attributes match the variation attributes.
+ */
+function matchesAttributes(blockAttributes, variationAttributes) {
+  if (utils_isObject(blockAttributes) && utils_isObject(variationAttributes)) {
+    return Object.entries(variationAttributes).every(([key, value]) => matchesAttributes(blockAttributes?.[key], value));
+  }
+  return blockAttributes === variationAttributes;
+}
 
 ;// CONCATENATED MODULE: ./node_modules/@wordpress/blocks/build-module/store/selectors.js
 /**
@@ -8174,6 +8195,7 @@ const getValueFromObjectPath = (object, path, defaultValue) => {
 /**
  * WordPress dependencies
  */
+
 
 
 /**
@@ -8414,11 +8436,15 @@ function getActiveBlockVariation(state, blockName, attributes, scope) {
         continue;
       }
       const isMatch = definedAttributes.every(attribute => {
-        const attributeValue = getValueFromObjectPath(attributes, attribute);
-        if (attributeValue === undefined) {
+        const variationAttributeValue = getValueFromObjectPath(variation.attributes, attribute);
+        if (variationAttributeValue === undefined) {
           return false;
         }
-        return attributeValue === getValueFromObjectPath(variation.attributes, attribute);
+        let blockAttributeValue = getValueFromObjectPath(attributes, attribute);
+        if (blockAttributeValue instanceof external_wp_richText_namespaceObject.RichTextData) {
+          blockAttributeValue = blockAttributeValue.toHTMLString();
+        }
+        return matchesAttributes(blockAttributeValue, variationAttributeValue);
       });
       if (isMatch && definedAttributesLength > maxMatchedAttributes) {
         match = variation;
@@ -14021,9 +14047,6 @@ function listReducer(node) {
     if (prevListItem) {
       prevListItem.appendChild(list);
       parentList.removeChild(parentListItem);
-    } else {
-      parentList.parentNode.insertBefore(list, parentList);
-      parentList.parentNode.removeChild(parentList);
     }
   }
 
@@ -14464,7 +14487,11 @@ function rawHandler({
 }) {
   // If we detect block delimiters, parse entirely as blocks.
   if (HTML.indexOf('<!-- wp:') !== -1) {
-    return parser_parse(HTML);
+    const parseResult = parser_parse(HTML);
+    const isSingleFreeFormBlock = parseResult.length === 1 && parseResult[0].name === 'core/freeform';
+    if (!isSingleFreeFormBlock) {
+      return parseResult;
+    }
   }
 
   // An array of HTML strings and block objects. The blocks replace matched
@@ -15071,7 +15098,11 @@ function pasteHandler({
     // Check plain text if there is no HTML.
     const content = HTML ? HTML : plainText;
     if (content.indexOf('<!-- wp:') !== -1) {
-      return parser_parse(content);
+      const parseResult = parser_parse(content);
+      const isSingleFreeFormBlock = parseResult.length === 1 && parseResult[0].name === 'core/freeform';
+      if (!isSingleFreeFormBlock) {
+        return parseResult;
+      }
     }
   }
 
